@@ -65,12 +65,15 @@ void lab6()
 
 }
 
-long double f1(long double x){
-	return (-1) * std::cos(0.1*x) *
+matrix f1(matrix x_temp){
+	double x =  m2d(x_temp);
+	long double a = (-1) * std::cos(0.1*x) *
 		(
 			1 / std::exp(
 				pow(0.1*x-2*M_PI,2)
 			)
 		) +
 		0.002* pow(0.1*x,2);
+
+		return matrix(a);
 }

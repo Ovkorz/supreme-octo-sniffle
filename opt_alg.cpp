@@ -5,6 +5,7 @@ double* expansion(matrix(*ff)(matrix, matrix, matrix), double x0, double d, doub
 	{
 		double* p = new double[2]{ 0,0 };
 		//Tu wpisz kod funkcji
+		
 
 		return p;
 	}
