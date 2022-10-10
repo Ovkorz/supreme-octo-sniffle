@@ -1,13 +1,15 @@
 /*********************************************
-Kod stanowi uzupe³nienie materia³ów do æwiczeñ
+Kod stanowi uzupeï¿½nienie materiaï¿½ï¿½w do ï¿½wiczeï¿½
 w ramach przedmiotu metody optymalizacji.
-Kod udostêpniony na licencji CC BY-SA 3.0
-Autor: dr in¿. £ukasz Sztangret
+Kod udostï¿½pniony na licencji CC BY-SA 3.0
+Autor: dr inï¿½. ï¿½ukasz Sztangret
 Katedra Informatyki Stosowanej i Modelowania
-Akademia Górniczo-Hutnicza
+Akademia Gï¿½rniczo-Hutnicza
 *********************************************/
 
 #include"opt_alg.h"
+#include<cmath>
+
 
 void lab1();
 void lab2();
@@ -15,6 +17,8 @@ void lab3();
 void lab4();
 void lab5();
 void lab6();
+
+long double f1(long double x);
 
 int main()
 {
@@ -59,4 +63,14 @@ void lab5()
 void lab6()
 {
 
+}
+
+long double f1(long double x){
+	return (-1) * std::cos(0.1*x) *
+		(
+			1 / std::exp(
+				pow(0.1*x-2*M_PI,2)
+			)
+		) +
+		0.002* pow(0.1*x,2);
 }
