@@ -1,11 +1,57 @@
 #include"opt_alg.h"
-double* expansion(matrix(*ff)(matrix, matrix, matrix), double x0, double d, double alpha, int Nmax, matrix ud1, matrix ud2)
+long double* expansion(long double(*ff)(long double), long double x0, long double d, double alpha, int Nmax, int &f_calls, matrix ud2)
 {
 	try
 	{
 		double* p = new double[2]{ 0,0 };
 		//Tu wpisz kod funkcji
 		
+		long double x1 = x0 + d;
+		double x = {x0, x1};
+
+		long double 
+			y0 = (*ff)(x0),
+			y1 = (*ff)(x1);
+		if(y0 == y1){
+			p[0] = x0; p[1] = x1;
+			return p;
+		}
+		else if(y0 > y1){
+			d= -d;
+			x1 = x0 + d;
+			y1 = (*ff)(x1);
+			if(y0 <= y1){
+				p[0] = x0; p[1] = x1;
+				return p;
+			}
+		}
+
+		int i = 0;
+		long double 
+			x_prev = x0,
+			x_crrnt = x1,
+			x_next = 0;
+
+		do {
+			if (f_calls > Nmax){
+				cerr << "Too many f_calls!"<<endl;
+				return NULL;
+			}
+			i++;
+			x_prev = x_crrnt;
+			x_crrnt = x_next;
+			x_next = x0 + pow(alpha, i) * d;
+			
+		} while (x_crrnt <= x_next);
+
+		if (d > 0) {
+			p[0] = x_prev;
+			p[1] = x_next;
+		}
+		else {
+			p[0] = x_next;
+			p[1] = x_prev;
+		}
 
 		return p;
 	}
