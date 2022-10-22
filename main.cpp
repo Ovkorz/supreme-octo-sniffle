@@ -41,10 +41,25 @@ int main()
 
 void lab1()
 {
-	srand(time(NULL));
-	double x0 = rand()%200 - 100; //staring point in range (-100, 100)
-	double d = 0.1, alpha = 1.1;
-	std::cout << "chuj" << std::endl;
+	srand((time(NULL)));
+	double* temp_tab = new double[2]{ 0.0, 0.0 };
+	double x0; int rand_temp;									//ponieważ chcę losować liczby niecałkowite
+	double d = 0.1;												//to jest krok chyba, nie pamiętam jaki powinien być, jak coś to się zmieni
+	double alfa; int alfa_temp;									// też chcę niecałkowite więc podobnie - zamiana na double potem
+	int N_max;
+	matrix ud1, ud2;											//A TO PO CO?
+
+
+
+	for (int j = 0; j < 3; j++) {
+		alfa_temp = rand() % 301 + 100;							//losowanie wsp. alfa
+		alfa = alfa_temp / 100.0;
+		for (int i = 0; i < 100; i++) {
+			rand_temp = rand() % 20001 - 10000;					//o tutaj liczby int
+			x0 = rand_temp / 100.0;										//dzielenie tak aby były liczby niecałkowite 
+			temp_tab = expansion(&f1, x0, d, alfa, ud1, ud2)
+		}
+	}
 
 }
 
