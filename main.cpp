@@ -44,6 +44,7 @@ void lab1()
 	srand(time(NULL));
 	double x0 = rand()%200 - 100; //staring point in range (-100, 100)
 	double d = 0.1, alpha = 1.1;
+	std::cout << "chuj" << std::endl;
 
 }
 
