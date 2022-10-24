@@ -46,11 +46,11 @@ void lab1()
 	double x0; int rand_temp;									//ponieważ chcę losować liczby niecałkowite
 	double d = 0.1;												//to jest krok chyba, nie pamiętam jaki powinien być, jak coś to się zmieni
 	double alfa; int alfa_temp;									// też chcę niecałkowite więc podobnie - zamiana na double potem
-	int N_max = 5;												//na razie dam 5 jak coś to zmień
+	int N_max = 1000;												//na razie dam 5 jak coś to zmień
 	
 
 	for (int j = 0; j < 3; j++) {
-		alfa_temp = rand() % 301 + 100;							//losowanie wsp. alfa
+		alfa_temp = rand() % 301 + 100;							
 		alfa = alfa_temp / 100.0;
 		for (int i = 0; i < 100; i++) {
 			rand_temp = rand() % 20001 - 10000;					//o tutaj liczby int
