@@ -1,4 +1,4 @@
-#include"include/opt_alg.h"
+#include"opt_alg.h"
 long double* expansion(long double(*ff)(long double), long double x0, long double d, double alpha, int Nmax, int &f_calls)
 {
 	try

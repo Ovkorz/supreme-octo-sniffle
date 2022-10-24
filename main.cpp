@@ -8,7 +8,7 @@ Akademia G�rniczo-Hutnicza
 *********************************************/
 
 // #include"algopt_alg.h"
-#include"alg/include/opt_alg.h"
+#include"opt_alg.h"
 #include<cmath>
 #include<ctime>
 #include<cstdlib>
