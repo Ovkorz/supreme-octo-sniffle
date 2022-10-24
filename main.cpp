@@ -7,7 +7,8 @@ Katedra Informatyki Stosowanej i Modelowania
 Akademia G�rniczo-Hutnicza
 *********************************************/
 
-#include"opt_alg.h"
+// #include"algopt_alg.h"
+#include"alg/include/opt_alg.h"
 #include<cmath>
 #include<ctime>
 #include<cstdlib>
