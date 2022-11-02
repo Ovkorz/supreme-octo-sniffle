@@ -1,4 +1,40 @@
 #include"opt_alg.h"
+
+using namespace std;
+
+// class Fibonacci{
+// public:
+//     int a = 0, b = 1, c = 1, k = 3;
+//     int generate(int);
+// };
+
+int Fibonacci::generate(int n){
+	if(n <= 0 ) return -1;
+
+	int i = 2;
+
+	if(n == k) return c;
+	else if (n == k - 1) return b;
+	else if (n == k - 2) return a;
+	else if(n > k) i = k;
+	else {
+		a = 0;
+		b = 1;
+		i = 2;
+	}
+
+	while(i < n){
+		c = a + b;
+		a = b;
+		b = c;
+
+		i++;
+	}
+
+    return c;
+}
+
+
 long double* expansion(long double(*ff)(long double), long double x0, long double d, double alpha, int Nmax, int &f_calls)
 {
 	try
@@ -66,6 +102,8 @@ solution fib(matrix(*ff)(matrix, matrix, matrix), double a, double b, double eps
 	{
 		solution Xopt;
 		//Tu wpisz kod funkcji
+		Fibonacci fib;
+
 
 		return Xopt;
 	}
