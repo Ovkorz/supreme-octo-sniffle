@@ -7,12 +7,11 @@ Katedra Informatyki Stosowanej i Modelowania
 Akademia G�rniczo-Hutnicza
 *********************************************/
 
-// #include"algopt_alg.h"
-#include"opt_alg.h"
 #include<cmath>
 #include<ctime>
 #include<cstdlib>
 
+#include"opt_alg.h"
 
 void lab1();
 void lab2();
@@ -45,7 +44,7 @@ void lab1()
 	std::cout<< "lab 1" << std::endl;
 
 	srand((time(NULL)));
-	double* temp_tab = new double[2]{ 0.0, 0.0 };
+	long double* temp_tab = new long double[2]{ 0.0, 0.0 };
 	double x0; int rand_temp;									//ponieważ chcę losować liczby niecałkowite
 	double d = 0.1;												//to jest krok chyba, nie pamiętam jaki powinien być, jak coś to się zmieni
 	double alfa; int alfa_temp;									// też chcę niecałkowite więc podobnie - zamiana na double potem
@@ -61,7 +60,7 @@ void lab1()
 		for (int i = 0; i < 100; i++) {
 			rand_temp = rand() % 20001 - 10000;					//o tutaj liczby int
 			x0 = rand_temp / 100.0;										//dzielenie tak aby były liczby niecałkowite 
-			temp_tab = expansion(&f1, x0, d, alfa, Nmax, f_calls);
+			temp_tab = expansion(&f1, x0, d, alfa, N_max, f_calls);
 			std::cout 	<< i+1 << "\t"
 						<< x0 << "\t"
 						<< temp_tab[0] << "\t"

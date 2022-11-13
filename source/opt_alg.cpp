@@ -3,11 +3,10 @@ long double* expansion(long double(*ff)(long double), long double x0, long doubl
 {
 	try
 	{
-		double* p = new double[2]{ 0,0 };
+		long double* p = new long double[2]{ 0,0 };
 		//Tu wpisz kod funkcji
 		
 		long double x1 = x0 + d;
-		double x = {x0, x1};
 
 		long double 
 			y0 = (*ff)(x0),
