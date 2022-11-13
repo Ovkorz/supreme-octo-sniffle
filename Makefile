@@ -1,8 +1,8 @@
 # kompilator c
-CCOMP = g++
+CC = g++
 
 # konsolidator
-LOADER = g++
+LD = g++
 
 # opcje optymalizacji:
 # wersja do debugowania
@@ -33,16 +33,16 @@ SRC_DIR     = ./source
 BUILD_DIR   = ./build
 BIN_DIR     = ./bin
 SRC_LIST = $(wildcard $(SRC_DIR)/*.cpp)
-OBJ_LIST = $(BUILD_DIR)/$(notdir $(SRC_LIST:.cpp=.o))
+OBJ_LIST = $(addprefix $(BUILD_DIR)/, $(notdir $(SRC_LIST:.cpp=.o)))
 
 .PHONY: all clean $(PROG_NAME) compile
 
 all: $(PROG_NAME)
 
-compile: 
-	$(CC) $(SRC_LIST) -o $(BUILD_DIR)/$(OBJ_LIST) $(INC)
+$(BUILD_DIR)/%.o: $(SRC_DIR)/%.cpp
+	$(CC) -c $^ $(CFLAG) -o $@ $(INC)
 
-$(PROG_NAME): compile
+$(PROG_NAME): $(OBJ_LIST)
 	$(LD) $(OBJ_LIST) -o $(BIN_DIR)/$@
 
 clean:
