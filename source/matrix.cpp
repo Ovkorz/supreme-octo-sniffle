@@ -1,6 +1,6 @@
 //Ten plik nie powinien by� edytowany
 
-#include"/include/matrix.h"
+#include"matrix.h"
 
 matrix::matrix(double L)
 {
