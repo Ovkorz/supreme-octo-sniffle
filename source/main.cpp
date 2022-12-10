@@ -76,7 +76,32 @@ void lab1()
 
 void lab2()
 {
+	//Funkcja testowa
+	double s = 0.5, alphaHJ = 0.5, alphaR = 2, beta = 0.5, epsilon = 1e-3;
+	int Nmax = 1000;
+	solution opt;
+	matrix x0, s0;
+	s0 = matrix(2, 1, s);
+	x0 = 2 * rand_mat(2, 1) - 1;
+	cout << x0 << endl << endl;
+	opt = HJ(ff2T, x0, s, alphaHJ, epsilon, Nmax);
+	cout << opt << endl << endl;
+	solution::clear_calls();
+	opt = Rosen(ff2T, x0, s0, alphaR, beta, epsilon, Nmax);
+	cout << opt << endl << endl;
+	solution::clear_calls();
 
+	//Ramie robota
+	s = 2;
+	x0 = 10 * rand_mat(2, 1);
+	cout << x0 << endl << endl;
+	opt = HJ(ff2R, x0, s, alphaHJ, epsilon, Nmax);
+	cout << opt << endl << endl;
+	solution::clear_calls();
+	s0 = matrix(2, 1, s);
+	opt = Rosen(ff2R, x0, s0, alphaR, beta, epsilon, Nmax);
+	cout << opt << endl << endl;
+	solution::clear_calls();
 }
 
 void lab3()
