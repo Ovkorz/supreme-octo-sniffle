@@ -127,8 +127,76 @@ solution Rosen(matrix(*ff)(matrix, matrix, matrix), matrix x0, matrix s0, double
 	try
 	{
 		solution Xopt;
-		//Tu wpisz kod funkcji
+		Xopt.ud = trans(x0);
+		solution XB(x0), X;
+		int n = get_dim(XB);
+		matrix l(n, 1), p(n, 1), s(s0), D = ident_mat(n);
+		XB.fit_fun(ff, ud1, ud2);
 
+		while (true)
+		{
+			// wstepne przeszukiwanie do uzupelnienia
+			X.x = XB.x;
+			XB.fit_fun(ff, ud1, ud2);
+
+			for(int i = 0; i < n; i++){
+
+				X.x[i] += s[i] * D[i];		
+				X.fit_fun(ff, ud1, ud2);
+				if(X.y[i] >= XB.y[i]){
+					X.x[i] = XB.x[i];
+					p[i]++;
+					s[i] *= -beta;
+				}
+				else {
+					l[i] += s[i];
+					s[i] *= alpha;
+				}
+
+			}
+			
+			Xopt.ud.add_row(trans(XB.x));
+			XB.x = X.x;
+
+			bool change = true;
+			for (int i = 0; i < n; ++i)
+				if (l(i) == 0 || p(i) == 0)
+				{
+					change = false;
+					break;
+				}
+			if (change)
+			{
+				matrix Q(n, n), v(n, 1);
+				for (int i = 0; i < n; ++i)
+					for (int j = 0; j <= i; ++j)
+						Q(i, j) = l(i);
+				Q = D * Q;
+				v = Q[0] / norm(Q[0]);
+				D.set_col(v, 0);
+				for (int i = 1; i < n; ++i)
+				{
+					matrix temp(n, 1);
+					for (int j = 0; j < i; ++j)
+						temp = temp + trans(Q[i]) * D[j] * D[j];
+					v = (Q[i] - temp) / norm(Q[i] - temp);
+					D.set_col(v, i);
+				}
+				s = s0;
+				l = matrix(n, 1);
+				p = matrix(n, 1);
+			}
+
+			if(X.f_calls > Nmax) throw "Too many f calls!";
+
+			double max_step = s[0];
+			for(int i = 1; i < n; i++){
+				if(s[i]> max_step) max_step = s[i];
+			}
+
+			if(max_step < epsilon) break;
+		// warunki stopu
+		}
 		return Xopt;
 	}
 	catch (string ex_info)
