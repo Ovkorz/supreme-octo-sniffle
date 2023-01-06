@@ -10,7 +10,7 @@ double geometric_mean (const matrix &A){
     }
 
     return sqrt(sum_of_squares);
-#include"user_funs.h"
+}
 
 matrix ff1T(matrix x, matrix ud1, matrix ud2)
 {
