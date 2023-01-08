@@ -616,3 +616,25 @@ int get_len(const matrix& A)
 		throw string("int get_len(const matrix&):\ndlugosc jest zwracana tylko dla wektorow pionowych");
 	return A.n;
 }
+
+string print_m_l(const matrix& A, string name = "matrix"){
+	// if(A == NAN) return "";
+
+	string out = name+"[";
+	for(int i = 0; i < A.n-1; i++){
+		out += "[";
+		for(int j = 0; j< A.m-1; j++){
+			out += to_string(A(i,j)) + ", ";
+		}
+		out += to_string(A(i, A.m-1)) + "], "; //last column of each row
+	}
+	
+	//last row
+	out += "[";
+	for(int j = 0; j< A.m-1; j++){
+			out += to_string(A(A.n-1,j)) + ", ";
+	}
+	out += to_string(A(A.n-1, A.m-1)) + "]]"; //last column of last row
+
+	return out;
+}
