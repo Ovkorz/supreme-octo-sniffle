@@ -228,7 +228,7 @@ solution Rosen(matrix(*ff)(matrix, matrix, matrix), matrix x0, matrix s0, double
 				p = matrix(n, 1);
 			}
 
-			if(X.f_calls > Nmax) throw "Too many f calls!";
+			if(X.f_calls > Nmax) throw string("Too many f calls!");
 
 			double max_step = abs(s(0));
 			for(int i = 1; i < n; i++){
@@ -428,11 +428,65 @@ solution Newton(matrix(*ff)(matrix, matrix, matrix), matrix(*gf)(matrix, matrix,
 
 solution golden(matrix(*ff)(matrix, matrix, matrix), double a, double b, double epsilon, int Nmax, matrix ud1, matrix ud2)
 {
+
+	#ifdef VERBOSE
+		cout<<"Golden ratio optimization..."<<endl;
+	#endif
+
 	try
 	{
-		solution Xopt;
+		solution Xopt, X;
 		//Tu wpisz kod funkcji
+		matrix lower(a), upper(b), x1(a), x2(b);
+		double ratio = 2/ (3+ sqrt(5));
 
+		Xopt.x = (1-ratio) * lower + ratio * upper; // x1
+		Xopt.fit_fun(ff, ud1, ud2);
+
+		#ifdef VERBOSE
+			cout<<"Initial state: " << print_m_l(Xopt, "Xopt")<< ", "<< print_m_l(lower, "lower") << ", " << print_m_l(upper, "upper") <<endl;
+		#endif
+
+		int counter = 0;
+		while(abs((upper - lower)(0)) > 2 * epsilon){
+
+			X.x = (1 - ratio) * Xopt.x + ratio * upper; // x2
+			X.fit_fun(ff, ud1, ud2);
+			Xopt.fit_fun(ff, ud1, ud2);
+			
+			#ifdef VERBOSE
+				cout<<" i = "<< counter<<", " << print_m_l(lower, "lower")<<", "<<print_m_l(upper, "upper")<<", range = "<< abs((upper - lower)(0))<< ", " 
+				<< print_m_l(Xopt, "Xopt")<< ", " << print_m_l(X, "X");
+			#endif
+
+			if(Xopt.y < X.y){
+
+			#ifdef VERBOSE
+				cout<< 	"Xopt.y <  X.y";
+			#endif
+
+				upper = lower;
+				lower = X.x;
+			}
+			else {
+				#ifdef VERBOSE
+					cout<< 	"Xopt.y >= X.y";
+				#endif
+				lower = Xopt.x;
+				Xopt = X;
+			}
+			
+			counter++;
+
+			#ifdef VERBOSE
+				cout<<endl;
+			#endif
+
+			if(X.f_calls > Nmax) throw string("Too many f calls!");
+		}	
+
+		Xopt.x = (Xopt.x + X.x)/2;
+		Xopt.fit_fun(ff, ud1, ud2);
 		return Xopt;
 	}
 	catch (string ex_info)
