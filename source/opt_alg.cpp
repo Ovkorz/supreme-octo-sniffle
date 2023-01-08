@@ -155,7 +155,7 @@ solution Rosen(matrix(*ff)(matrix, matrix, matrix), matrix x0, matrix s0, double
 				X.x(i) = X.x(i) + s(i);
 				X.fit_fun(ff, ud1, ud2);
 
-				if(X.y(i) >= XB.y(i)){
+				if(X.y >= XB.y){
 					cout<<"bad step"<<endl;
 					X.x(i) = XB.x(i);
 					p(i) = p(i) + 1;
