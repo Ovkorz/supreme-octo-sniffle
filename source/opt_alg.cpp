@@ -1,6 +1,8 @@
 #include"opt_alg.h"
 #include"user_funs.h"
 
+using namespace std;
+
 long double* expansion(long double(*ff)(long double), long double x0, long double d, double alpha, int Nmax, int &f_calls)
 {
 	try
@@ -124,6 +126,8 @@ solution HJ_trial(matrix(*ff)(matrix, matrix, matrix), solution XB, double s, ma
 
 solution Rosen(matrix(*ff)(matrix, matrix, matrix), matrix x0, matrix s0, double alpha, double beta, double epsilon, int Nmax, matrix ud1, matrix ud2)
 {
+
+	cout<< "Rosenbrock optimization..." <<endl;
 	try
 	{
 		solution Xopt;
@@ -131,27 +135,38 @@ solution Rosen(matrix(*ff)(matrix, matrix, matrix), matrix x0, matrix s0, double
 		solution XB(x0), X;
 		int n = get_dim(XB);
 		matrix l(n, 1), p(n, 1), s(s0), D = ident_mat(n);
-		XB.fit_fun(ff, ud1, ud2);
 
+		int counter = 0;
 		while (true)
 		{
 			// wstepne przeszukiwanie do uzupelnienia
 			X.x = XB.x;
 			XB.fit_fun(ff, ud1, ud2);
+			cout<<"\nIteration "<<counter << endl;
+			cout << "XB:\n" <<XB<<endl;
 
 			for(int i = 0; i < n; i++){
 
-				X.x[i] += s[i] * D[i];		
+				cout <<"shift - i: " << i << endl;
+				cout<< "X:\n" << X <<endl;
+				// cout<< "s: \n" << s <<endl;
+
+				
+				X.x(i) = X.x(i) + s(i);
 				X.fit_fun(ff, ud1, ud2);
-				if(X.y[i] >= XB.y[i]){
-					X.x[i] = XB.x[i];
-					p[i]++;
-					s[i] *= -beta;
+
+				if(X.y(i) >= XB.y(i)){
+					cout<<"bad step"<<endl;
+					X.x(i) = XB.x(i);
+					p(i) = p(i) + 1;
+					s(i) = s(i)*(-beta);
 				}
 				else {
-					l[i] += s[i];
-					s[i] *= alpha;
+					cout<<"good step"<<endl;
+					l(i) = l(i) + s(i);
+					s(i) = s(i) * alpha;
 				}
+				
 
 			}
 			
@@ -163,10 +178,12 @@ solution Rosen(matrix(*ff)(matrix, matrix, matrix), matrix x0, matrix s0, double
 				if (l(i) == 0 || p(i) == 0)
 				{
 					change = false;
+					cout<<"no change" << endl;
 					break;
 				}
 			if (change)
 			{
+				cout <<"change" << endl;
 				matrix Q(n, n), v(n, 1);
 				for (int i = 0; i < n; ++i)
 					for (int j = 0; j <= i; ++j)
@@ -189,15 +206,23 @@ solution Rosen(matrix(*ff)(matrix, matrix, matrix), matrix x0, matrix s0, double
 
 			if(X.f_calls > Nmax) throw "Too many f calls!";
 
-			double max_step = s[0];
+			double max_step = abs(s(0));
 			for(int i = 1; i < n; i++){
-				if(s[i]> max_step) max_step = s[i];
+				if(abs(s(i))> max_step) max_step = abs(s(i));
 			}
 
-			if(max_step < epsilon) break;
+
+			if(max_step < epsilon){
+				cout<< "max_step: " <<max_step <<", break"<<endl;
+				XB.fit_fun(ff, ud1, ud2);		
+				XB.ud = Xopt.ud;		
+				break;
+			}
+
+			counter++;
 		// warunki stopu
 		}
-		return Xopt;
+		return XB;
 	}
 	catch (string ex_info)
 	{
@@ -224,101 +249,101 @@ solution sym_NM(matrix(*ff)(matrix, matrix, matrix), matrix x0, double s, double
 	try
 	{
 		solution Xopt;
-		//Tu wpisz kod funkcji
+		// //Tu wpisz kod funkcji
 
-		int n = get_dim(x0);
+		// int n = get_dim(x0);
 
-		matrix *simplex = new matrix[n+1];
-		simplex[0] = x0;
-		for(int i = 1; i <= n; i++){
-			double* temp = new double[n];
-			for(int j = 0; j < n; j++) temp[j] = 0;
+		// matrix *simplex = new matrix[n+1];
+		// simplex[0] = x0;
+		// for(int i = 1; i <= n; i++){
+		// 	double* temp = new double[n];
+		// 	for(int j = 0; j < n; j++) temp[j] = 0;
 			
-			temp[i-1] = lambda;
-			simplex[i] = matrix(x0 + matrix(n, temp));
-		}
+		// 	temp[i-1] = lambda;
+		// 	simplex[i] = matrix(x0 + matrix(n, temp));
+		// }
 
-		int max_index =0, min_index=0;
-		while(true){
+		// int max_index =0, min_index=0;
+		// while(true){
 
-			// ######## set up of indexes ########
-			solution y_min(simplex[0]); y_min.fit_fun(ff, ud1, ud2);
-			solution y_max(simplex[0]); y_max.fit_fun(ff, ud1, ud2);
+		// 	// ######## set up of indexes ########
+		// 	solution y_min(simplex[0]); y_min.fit_fun(ff, ud1, ud2);
+		// 	solution y_max(simplex[0]); y_max.fit_fun(ff, ud1, ud2);
 			
-			for(int i = 1; i <= n; i++){
-				solution X(simplex[i]).fit_fun(ff, ud1, ud2);
-				if(X.y < y_min.y){
-					y_min.y = X.y;
-					min_index = i;
-				}
-				else if (X.y > y_max.y){
-					y_max.y = X.y;
-					max_index = i;
-				}
-			}
-			//#############################
+		// 	for(int i = 1; i <= n; i++){
+		// 		solution X(simplex[i]).fit_fun(ff, ud1, ud2);
+		// 		if(X.y < y_min.y){
+		// 			y_min.y = X.y;
+		// 			min_index = i;
+		// 		}
+		// 		else if (X.y > y_max.y){
+		// 			y_max.y = X.y;
+		// 			max_index = i;
+		// 		}
+		// 	}
+		// 	//#############################
 
-			//######## mid-point ########
-			matrix sum_filtered(0);
-			for(int i = 0; i <= n; i++){
-				if(i != max_index) sum_filtered += simplex[i];
-			}
-			matrix mid_point = sum_filtered / matrix(n);
+		// 	//######## mid-point ########
+		// 	matrix sum_filtered(0);
+		// 	for(int i = 0; i <= n; i++){
+		// 		if(i != max_index) sum_filtered += simplex[i];
+		// 	}
+		// 	matrix mid_point = sum_filtered / matrix(n);
 
-			//######## reflection ########
-			matrix refl_point = simplex[max_index] + alpha * (mid_point - simplex[max_index]);
-			solution y_refl(refl_point).fit_fun(ff, ud1, ud2);
+		// 	//######## reflection ########
+		// 	matrix refl_point = simplex[max_index] + alpha * (mid_point - simplex[max_index]);
+		// 	solution y_refl(refl_point).fit_fun(ff, ud1, ud2);
 
-			//######## expansion ########
-			if(y_refl.y < y_min.y){
-				matrix exp_point(mid_point + delta * (refl_point - mid_point));
-				solution y_exp(exp_point).fit_fun(ff, ud1, ud2);
-				if(y_exp.y < y_refl.y) 
-					simplex[max_index] = exp_point;
+		// 	//######## expansion ########
+		// 	if(y_refl.y < y_min.y){
+		// 		matrix exp_point(mid_point + delta * (refl_point - mid_point));
+		// 		solution y_exp(exp_point).fit_fun(ff, ud1, ud2);
+		// 		if(y_exp.y < y_refl.y) 
+		// 			simplex[max_index] = exp_point;
 
-				else
-					simplex[max_index] = refl_point;				
-			}
-			//######## reflection acceptance ########
-			else if(y_refl.y < y_max.y)
-				simplex[max_index] = refl_point;
+		// 		else
+		// 			simplex[max_index] = refl_point;				
+		// 	}
+		// 	//######## reflection acceptance ########
+		// 	else if(y_refl.y < y_max.y)
+		// 		simplex[max_index] = refl_point;
 
-			//######## contraction ########
-			else {
-				matrix contr_point = mid_point + beta * (simplex[max_index] - mid_point);
-				solution y_contr(contr_point).fit_fun(ff, ud1, ud2);
-				if(y_contr.y < y_exp.y)
-					simplex[max_index] = contr_point;
+		// 	//######## contraction ########
+		// 	else {
+		// 		matrix contr_point = mid_point + beta * (simplex[max_index] - mid_point);
+		// 		solution y_contr(contr_point).fit_fun(ff, ud1, ud2);
+		// 		if(y_contr.y < y_exp.y)
+		// 			simplex[max_index] = contr_point;
 
-			//######## reduction ########
-				else{
-					for(int i = 0; i <=n; i++){
-						if(i == min_index) continue;
-						else{
-							simplex[i] = delta * (simplex[i] + simplex[min_index]);
-						}
-					}
-				}
-			}
+		// 	//######## reduction ########
+		// 		else{
+		// 			for(int i = 0; i <=n; i++){
+		// 				if(i == min_index) continue;
+		// 				else{
+		// 					simplex[i] = delta * (simplex[i] + simplex[min_index]);
+		// 				}
+		// 			}
+		// 		}
+		// 	}
 
-			if(solution.f_calls > Nmax)
-				throw "Too many calls.";
+		// 	if(solution.f_calls > Nmax)
+		// 		throw "Too many calls.";
 
-			bool stop_condition = false;
-			for(int i = 0; i<=n; i++){
-				if(geometric_mean(simplex[i] - simplex[min_index]) < epsilon){
-					stop_condition = true;
-					break;
-				}
-			}
+		// 	bool stop_condition = false;
+		// 	for(int i = 0; i<=n; i++){
+		// 		if(geometric_mean(simplex[i] - simplex[min_index]) < epsilon){
+		// 			stop_condition = true;
+		// 			break;
+		// 		}
+		// 	}
 
-			if(stop_condition){
-				Xopt.x = simplex[min_index];
-				x.fit_fun(ff, ud1, ud2);
-				break;
-			}
+		// 	if(stop_condition){
+		// 		Xopt.x = simplex[min_index];
+		// 		x.fit_fun(ff, ud1, ud2);
+		// 		break;
+		// 	}
 
-		}
+		// }
 
 		return Xopt;
 	}
@@ -389,12 +414,60 @@ solution golden(matrix(*ff)(matrix, matrix, matrix), double a, double b, double 
 	}
 }
 
-solution Powell(matrix(*ff)(matrix, matrix, matrix), matrix x0, double epsilon, int Nmax, matrix ud1, matrix ud2)
+solution Powell(matrix(*ff)(matrix, matrix, matrix), matrix x0, double epsilon, int Nmax, matrix a, matrix ud2)
 {
+
+// solution Rosen(matrix(*ff)(matrix, matrix, matrix), matrix x0, matrix s0, double alpha, double beta, double epsilon, int Nmax, matrix ud1, matrix ud2)
 	try
 	{
-		solution Xopt;
+		solution Xopt(x0);
 		//Tu wpisz kod funkcji
+		// solution P(x0);
+		int n = get_dim(Xopt);
+		matrix d(n,n), s(n,1,1.), X(x0), P(x0);
+		solution h(matrix(1));
+
+		//for Rosenbrock method
+		const double alpha = 3, beta = 0.5;
+
+		matrix coef(2,2);
+		coef(0,0) = a(0,0);
+		// coef matrix:
+		// [[a, d1],
+		//  [0, d2]]
+
+
+		for(int i = 0; i < n; i++){
+			d(i,i) = 1;
+		}
+
+		for(int i = 0; i < n; i++){
+			matrix d_i = get_row(d, i);
+			coef.set_col(trans(d_i),1);
+
+			h = Rosen(ff, h.x, s, alpha, beta, epsilon, Nmax, X, coef);
+			P = P + (h.x * d_i);
+		}
+
+		matrix diff = P - X; double prox = 0;
+		for(int i = 0; i < n; i++){
+			prox += sqrt(
+				pow(diff(i),2)
+			);
+		}
+		if(prox < epsilon) return solution(X);
+
+		for(int i = 1; i < n; i++){
+			d.set_row(get_col(d, i), i-1);
+		}
+
+		d.set_row(P - X, n-1);
+		coef.set_col(
+			trans( d(n-1) )
+		,1);
+		
+
+		h = Rosen(ff, h.x, s, alpha, beta, epsilon, Nmax, X, coef);
 
 		return Xopt;
 	}
