@@ -1,12 +1,16 @@
 #include"user_funs.h"
 #include<cmath>
+#include<iostream>
+// #include<cstring>
 
 double geometric_mean (const matrix &A){
     double sum_of_squares = 0;
-    int n = get_dim(A);
+    int *n = get_size(A);
 
-    for(int i = 0; i<n; i++){
-        sum_of_squares += pow(A[i], 2);
+    for(int i = 0; i<n[0]; i++){
+		for(int j = 0; j < n[1]; j++){
+        	sum_of_squares += pow(A(i,j), 2);
+		}
     }
 
     return sqrt(sum_of_squares);
@@ -75,4 +79,68 @@ matrix df2(double t, matrix Y, matrix ud1, matrix ud2)
 	dY(0) = Y(1);
 	dY(1) = (ud2(0) * (ud1(0) - Y(0)) + ud2(1) * (ud1(1) - Y(1)) - b * Y(1)) / I;
 	return dY;
+}
+
+matrix ff5Ta(matrix h, matrix x, matrix coef){
+
+	try{
+
+		int *x_size = get_size(x),
+			*h_size = get_size(h),
+			*a_size = get_size(coef);
+
+		if(	x_size[0] != 2 || x_size[1] != 1)
+			throw("wrong \"x\" matrix size: " +  to_string(x_size[0]) + ", " + to_string( x_size[1])+"; expected: 2,1");
+		
+		if(	h_size[0] != 1 || h_size[1] != 1)
+			throw("wrong \"h\" matrix size: " + to_string(h_size[0]) + ", " + to_string( h_size[1])+"; expected: 1,1");
+
+		if(	a_size[0] != 2 || a_size[1] != 2)
+			throw("wrong \"coef\" matrix size: " + to_string(a_size[0]) + ", " + to_string( a_size[1])+"; expected: 2,2");
+
+		double a = coef(0,0);
+		matrix d = get_col(coef,1);
+		
+		matrix dY(
+			a * (pow(x(0) + h(0) *d(0) - 2, 2) + pow(x(1) + h(0) * d(1) - 2, 2))
+		);
+
+		return dY;
+	}
+	catch (string ex_info)
+	{
+		throw ("ff5Ta(...):\n" + ex_info);
+	}
+
+}
+
+matrix ff5Tb(matrix h, matrix x, matrix coef){
+
+	try{
+		int *x_size = get_size(x),
+			*h_size = get_size(h),
+			*a_size = get_size(coef);
+
+		if(	x_size[0] != 2 || x_size[1] != 1)
+			throw("wrong \"x\" matrix size: " +  to_string(x_size[0]) + ", " + to_string( x_size[1])+"; expected: 2,1");
+		
+		if(	h_size[0] != 1 || h_size[1] != 1)
+			throw("wrong \"h\" matrix size: " + to_string(h_size[0]) + ", " + to_string(h_size[1])+"; expected: 1,1");
+
+		if(	a_size[0] != 2 || a_size[1] != 2)
+			throw("wrong \"coef\" matrix size: " + to_string(a_size[0]) + ", " + to_string(a_size[1])+"; expected: 2,2");
+
+		double a = coef(0,0);
+		matrix d = get_col(coef,1);
+		
+		matrix dY(
+			1/a * (pow(x(0) + h(0) * d(0) + 2, 2) + pow(x(1) + h(0) * d(1) + 2, 2))
+		);
+
+		return dY;
+	}
+	catch (string ex_info)
+	{
+		throw ("ff5Tb(...):\n" + ex_info);
+	}
 }
