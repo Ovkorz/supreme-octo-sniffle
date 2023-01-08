@@ -141,3 +141,7 @@ int get_dim(const solution& A)
 		throw ("int get_dim(const solution&):\n" + ex_info);
 	}
 }
+
+string print_m_l(const solution& A, string name){
+ 	return name + "("+ print_m_l(A.x, "x")+ ", " + print_m_l(A.y, "y") + ", f_calls: " + to_string(A.f_calls) + ", flag: " + to_string(A.flag) + ")";
+}

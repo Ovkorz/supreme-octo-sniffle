@@ -1,4 +1,4 @@
-//Ten plik nie powinien byæ edytowany
+//Ten plik nie powinien byï¿½ edytowany
 
 #pragma once
 
@@ -29,3 +29,5 @@ public:
 
 int get_dim(const solution&); // throw (string);
 ostream& operator<<(ostream&, const solution&);
+
+string print_m_l(const solution& A, string name);

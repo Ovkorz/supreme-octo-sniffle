@@ -127,7 +127,10 @@ solution HJ_trial(matrix(*ff)(matrix, matrix, matrix), solution XB, double s, ma
 solution Rosen(matrix(*ff)(matrix, matrix, matrix), matrix x0, matrix s0, double alpha, double beta, double epsilon, int Nmax, matrix ud1, matrix ud2)
 {
 
+	#ifdef VERBOSE
 	cout<< "Rosenbrock optimization..." <<endl;
+	#endif
+
 	try
 	{
 		solution Xopt;
@@ -136,38 +139,52 @@ solution Rosen(matrix(*ff)(matrix, matrix, matrix), matrix x0, matrix s0, double
 		int n = get_dim(XB);
 		matrix l(n, 1), p(n, 1), s(s0), D = ident_mat(n);
 
+		#ifdef VERBOSE
+			cout << "Initial state: "<< print_m_l(x0, "x0") << ", " << print_m_l(s0, "s0") << ", " << print_m_l(ud1, "ud1") << ", " << print_m_l(ud2, "ud2")<<endl;
+		#endif
+
+		
 		int counter = 0;
 		while (true)
 		{
-			// wstepne przeszukiwanie do uzupelnienia
 			X.x = XB.x;
 			XB.fit_fun(ff, ud1, ud2);
-			cout<<"\nIteration "<<counter << endl;
-			cout << "XB:\n" <<XB<<endl;
+
+			#ifdef VERBOSE
+				cout<<"\nIteration "<<counter << ", ";
+				cout << "init: " << print_m_l(XB, "XB") <<", " << print_m_l(s, "step") << "; ";
+			#endif
+			
+			// wstepne przeszukiwanie do uzupelnienia
 
 			for(int i = 0; i < n; i++){
 
-				cout <<"shift - i: " << i << endl;
-				cout<< "X:\n" << X <<endl;
-				// cout<< "s: \n" << s <<endl;
+				#ifdef VERBOSE
+					cout <<"shift: i = " << i << ", ";
+				#endif
 
-				
 				X.x(i) = X.x(i) + s(i);
 				X.fit_fun(ff, ud1, ud2);
 
 				if(X.y >= XB.y){
-					cout<<"bad step"<<endl;
 					X.x(i) = XB.x(i);
 					p(i) = p(i) + 1;
 					s(i) = s(i)*(-beta);
+
+					#ifdef VERBOSE
+						cout<<"bad step, "
+							<< print_m_l(p, "p") <<", "<< print_m_l(s, "s")<< ", ";
+					#endif
 				}
 				else {
-					cout<<"good step"<<endl;
 					l(i) = l(i) + s(i);
 					s(i) = s(i) * alpha;
-				}
-				
 
+					#ifdef VERBOSE
+						cout<<"good step, "
+							<< print_m_l(l, "l") <<", "<< print_m_l(s, "s")<< ", ";
+					#endif
+				}
 			}
 			
 			Xopt.ud.add_row(trans(XB.x));
@@ -178,12 +195,19 @@ solution Rosen(matrix(*ff)(matrix, matrix, matrix), matrix x0, matrix s0, double
 				if (l(i) == 0 || p(i) == 0)
 				{
 					change = false;
-					cout<<"no change" << endl;
+					#ifdef VERBOSE
+						cout<<"no change, ";
+				
+					#endif
+
 					break;
 				}
 			if (change)
 			{
-				cout <<"change" << endl;
+				#ifdef VERBOSE
+					cout <<"step base change, ";
+				#endif
+
 				matrix Q(n, n), v(n, 1);
 				for (int i = 0; i < n; ++i)
 					for (int j = 0; j <= i; ++j)
@@ -213,7 +237,10 @@ solution Rosen(matrix(*ff)(matrix, matrix, matrix), matrix x0, matrix s0, double
 
 
 			if(max_step < epsilon){
-				cout<< "max_step: " <<max_step <<", break"<<endl;
+				#ifdef VERBOSE
+					cout<< "max_step: " <<max_step <<", break" << endl;
+				#endif
+
 				XB.fit_fun(ff, ud1, ud2);		
 				XB.ud = Xopt.ud;		
 				break;
