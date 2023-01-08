@@ -436,7 +436,6 @@ solution Powell(matrix(*ff)(matrix, matrix, matrix), matrix x0, double epsilon, 
 		// [[a, d1],
 		//  [0, d2]]
 
-
 		for(int i = 0; i < n; i++){
 			d(i,i) = 1;
 		}
@@ -465,8 +464,7 @@ solution Powell(matrix(*ff)(matrix, matrix, matrix), matrix x0, double epsilon, 
 		coef.set_col(
 			trans( d(n-1) )
 		,1);
-		
-
+ 
 		h = Rosen(ff, h.x, s, alpha, beta, epsilon, Nmax, X, coef);
 
 		return Xopt;
