@@ -619,6 +619,8 @@ int get_len(const matrix& A)
 
 string print_m_l(const matrix& A, string name = "matrix"){
 	// if(A == NAN) return "";
+	if(A.n == 1 && A.m == 1)
+		return name + "[" + A(0,0) + "]";
 
 	string out = name+"[";
 	for(int i = 0; i < A.n-1; i++){
