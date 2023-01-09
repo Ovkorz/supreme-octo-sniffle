@@ -81,6 +81,38 @@ matrix df2(double t, matrix Y, matrix ud1, matrix ud2)
 	return dY;
 }
 
+matrix ff5a(matrix x, matrix ud1, matrix ud2){
+	try{
+		int *x_size = get_size(x);
+		if(x_size[0] != 2 || x_size [1] != 1)
+			throw("wrong \"x\" matrix size: " +  to_string(x_size[0]) + ", " + to_string( x_size[1])+"; expected: 2,1");
+	
+		return matrix(
+			a * (pow(x(0) - 2, 2) + pow(x(1) - 2, 2))
+		)
+	}
+	catch (string ex_info)
+	{
+		throw ("ff5a(...):\n" + ex_info);
+	}
+}
+
+matrix ff5b(matrix x, matrix ud1, matrix ud2){
+	try{
+		int *x_size = get_size(x);
+		if(x_size[0] != 2 || x_size [1] != 1)
+			throw("wrong \"x\" matrix size: " +  to_string(x_size[0]) + ", " + to_string( x_size[1])+"; expected: 2,1");
+	
+		return matrix(
+			1/a * (pow(x(0) + 2, 2) + pow(x(1) + 2, 2))
+		)
+	}
+	catch (string ex_info)
+	{
+		throw ("ff5b(...):\n" + ex_info);
+	}
+}
+
 matrix ff5Ta(matrix h, matrix x, matrix coef){
 
 	try{
@@ -101,11 +133,12 @@ matrix ff5Ta(matrix h, matrix x, matrix coef){
 		double a = coef(0,0);
 		matrix d = get_col(coef,1);
 		
-		matrix dY(
-			a * (pow(x(0) + h(0) *d(0) - 2, 2) + pow(x(1) + h(0) * d(1) - 2, 2))
-		);
+		// matrix dY(
+		// 	a * (pow(x(0) + h(0) *d(0) - 2, 2) + pow(x(1) + h(0) * d(1) - 2, 2))
+		// );
 
-		return dY;
+		return ff5a(x + h * d);
+
 	}
 	catch (string ex_info)
 	{
@@ -133,11 +166,7 @@ matrix ff5Tb(matrix h, matrix x, matrix coef){
 		double a = coef(0,0);
 		matrix d = get_col(coef,1);
 		
-		matrix dY(
-			1/a * (pow(x(0) + h(0) * d(0) + 2, 2) + pow(x(1) + h(0) * d(1) + 2, 2))
-		);
-
-		return dY;
+		return ff5b(x + h * d);
 	}
 	catch (string ex_info)
 	{
