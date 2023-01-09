@@ -1,6 +1,7 @@
 //Ten plik nie powinien by� edytowany
 
 #include"matrix.h"
+#include<cstring>
 
 matrix::matrix(double L)
 {
@@ -122,7 +123,9 @@ void matrix::set_col(const matrix& c, int mv)
 	if (mv >= m || mv < 0)
 		throw string("void matrix::set_col(const matrix&,int):\nnumer kolmuny jest poza zakresem");
 	if (n != c.n)
-		throw string("void matrix::set_col(const matrix&,int):\nliczba wierszy macierzy musi byc rowna dlugosci wektora");
+		throw string("void matrix::set_col(const matrix&,int):\nliczba wierszy macierzy musi byc rowna dlugosci wektora")  + 
+			string("A: ") + to_string(n) + string("x") + to_string(m) + 
+			string(", B: ") + to_string(c.n) + string("x") + to_string(c.m);
 	if (c.m != 1)
 		throw string("void matrix::set_col(const matrix&,int):\nwstawiana kolumna musi miec postac wektora pionowego");
 	for (int i = 0; i < n; ++i)
@@ -134,7 +137,9 @@ void matrix::set_row(const matrix& c, int nv)
 	if (nv >= n || nv < 0)
 		throw string("void matrix::set_row(const matrix&,int):\nnumer wiersza jest poza zakresem");
 	if (m != c.m)
-		throw string("void matrix::set_row(const matrix&,int):\nliczba kolumn macierzy musi byc rowna dlugosci wektora");
+		throw string("void matrix::set_row(const matrix&,int):\nliczba kolumn macierzy musi byc rowna dlugosci wektora - ") + 
+			string("A: ") + to_string(n) + string("x") + to_string(m) + 
+			string(", B: ") + to_string(c.n) + string("x") + to_string(c.m);
 	if (c.n != 1)
 		throw string("void matrix::set_row(const matrix&,int):\nwstawiany wiersz musi miec postac wektora poziomego");
 	for (int i = 0; i < m; ++i)
@@ -229,7 +234,9 @@ matrix operator+(const matrix& A, const matrix& B)
 		return C;
 	}
 	else
-		throw string("matrix operator+(const matrix&, const matrix&):\nwymiary macierzy nie sa zgodne");
+		throw string("matrix operator+(const matrix&, const matrix&):\nwymiary macierzy nie sa zgodne - ") +
+		string("A: ") + to_string(nA[0]) + string("x") + to_string(nA[1]) + 
+		string(", B: ") + to_string(nB[0]) + string("x") + to_string(nB[1]);
 }
 
 matrix operator-(const matrix& A, const matrix& B)
