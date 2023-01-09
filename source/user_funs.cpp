@@ -81,7 +81,7 @@ matrix df2(double t, matrix Y, matrix ud1, matrix ud2)
 	return dY;
 }
 
-matrix ff5a(matrix x, matrix ud1, matrix ud2){
+matrix ff5a(matrix x, matrix a, matrix ud2 = NAN){
 	try{
 		return matrix(
 			a * (pow(x(0) - 2, 2) + pow(x(1) - 2, 2))
@@ -93,7 +93,7 @@ matrix ff5a(matrix x, matrix ud1, matrix ud2){
 	}
 }
 
-matrix ff5b(matrix x, matrix a, matrix ud2){
+matrix ff5b(matrix x, matrix a, matrix ud2 = NAN){
 	try{	
 		return matrix(
 			1/a * (pow(x(0) + 2, 2) + pow(x(1) + 2, 2))
@@ -135,13 +135,13 @@ matrix ff5Tb(matrix h, matrix x, matrix coef){
 	}
 }
 
-matrix ff5(matrix x, matrix a = matrix(1), matrix w = matrix(0.5)){
+matrix ff5(matrix x, matrix a, matrix w){
 	try{
 	int *x_size = get_size(x);
 		if(x_size[0] != 2 || x_size [1] != 1)
 			throw("wrong \"x\" matrix size: " +  to_string(x_size[0]) + ", " + to_string( x_size[1])+"; expected: 2,1");
 		
-		return w * ff5a(x + h * d, matrix(a)) + (1-w) * ff5b(x + h * d, matrix(a));
+		return w * ff5a(x, matrix(a)) + (1-w) * ff5b(x, matrix(a));
 	}
 	catch (string ex_info)
 	{
@@ -180,3 +180,59 @@ matrix ff5T(matrix h, matrix x, matrix coef){
 	}
 }
 
+matrix ff5rwP(matrix ld, matrix w, matrix c){
+	//ld matrix
+	// [[l],
+	// 	[d]]
+	try{
+		int *ld_size = get_size(ld),
+			*w_size = get_size(w),
+			*c_size = get_size(c);
+
+		if(ld_size[0] != 2 || ld_size[1] != 1)
+			throw("wrong \"ld\" matrix size: " +  to_string(ld_size[0]) + ", " + to_string( ld_size[1])+"; expected: 2,1");
+
+		if(w_size[0] != 1 || w_size[1] != 1)
+			throw("wrong \"w\" matrix size: " +  to_string(w_size[0]) + ", " + to_string( w_size[1])+"; expected: 1,1");
+
+		if(c_size[0] != 1 || c_size[1] != 1)
+			throw("wrong \"c\" matrix size: " +  to_string(c_size[0]) + ", " + to_string( c_size[1])+"; expected: 1,1");
+
+		const double P_force = 1000, E_young_mod = 2.07e11, material_density = 7800;
+		const double	LEN_MIN = 0.2, LEN_MAX = 1,
+						DIAM_MIN = 0.01, DIAM_MAX = 0.05,
+						DEFL_MAX = 0.005, STRESS_MAX = 3e8;
+
+		double length = ld(0), diam = ld(1);
+
+		double 
+		deflection = (
+			(64 * P_force * pow(length, 3))/
+			(3 * E_young_mod * M_PI * pow(diam, 4))
+		),
+		stress = (
+			(32 * P_force * length)/
+			(M_PI * pow(diam, 3))
+		),
+		mass = (
+			M_PI * pow(diam/2, 2) * length * material_density
+		);
+
+		double penalty = pow(max(0., LEN_MIN - length),2) + pow( max(0., length - LEN_MAX), 2);
+
+		penalty += pow( max(0., DIAM_MIN - diam), 2) + pow( max(0., diam - DIAM_MAX), 2);
+		penalty += pow( max(0., deflection - DEFL_MAX), 2) + pow( max(0., stress - STRESS_MAX), 2);
+
+		#ifdef VERBOSE
+			cout<< "[ff5rwP] input " << print_m_l(ld, "ld") << ", " << print_m_l(w, "w") << ", " << print_m_l(c, "c")
+				<< ", deflection: "<< deflection << ", stress: " << stress
+				<< ", mass: "<< mass << ", penalty: "<< penalty<<endl;
+		#endif
+
+		return w * mass + (1-w) * deflection + c * penalty;
+	}
+	catch (string ex_info)
+	{
+		throw ("ff5T(...):\n" + ex_info);
+	}
+}
