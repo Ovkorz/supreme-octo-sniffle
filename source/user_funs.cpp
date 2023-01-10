@@ -135,6 +135,24 @@ matrix ff5Tb(matrix h, matrix x, matrix coef){
 	}
 }
 
+matrix ff5_values(matrix x, matrix a, matrix w){
+	try{
+		int *x_size = get_size(x);
+		if(x_size[0] != 2 || x_size [1] != 1)
+			throw("wrong \"x\" matrix size: " +  to_string(x_size[0]) + ", " + to_string( x_size[1])+"; expected: 2,1");
+		
+		matrix dY(2,1);
+		dY(0) = ff5a(x, matrix(a));
+		dY(1) = ff5b(x, matrix(a));
+
+		return dY;
+	}
+	catch (string ex_info)
+	{
+		throw ("ff5_values(...):\n" + ex_info);
+	}
+}
+
 matrix ff5(matrix x, matrix a, matrix w){
 	try{
 	int *x_size = get_size(x);
@@ -166,7 +184,7 @@ matrix ff5T(matrix h, matrix x, matrix coef){
 			throw("wrong \"coef\" matrix size: " + to_string(a_size[0]) + ", " + to_string(a_size[1])+"; expected: 2,2");
 
 		double a = coef(0,0), w = coef(1,0);
-		w = (w <=0 || w > 1) ? 0.5 : w;
+		w = (w < 0 || w > 1) ? 0.5 : w;
 		a = (a == 0) ? 1 : a;
 
 		matrix d = get_col(coef,1);
@@ -180,10 +198,8 @@ matrix ff5T(matrix h, matrix x, matrix coef){
 	}
 }
 
-matrix ff5rwP(matrix ld, matrix w, matrix c){
-	//ld matrix
-	// [[l],
-	// 	[d]]
+matrix ff5rwP_values(matrix ld, matrix w, matrix c){
+
 	try{
 		int *ld_size = get_size(ld),
 			*w_size = get_size(w),
@@ -195,14 +211,11 @@ matrix ff5rwP(matrix ld, matrix w, matrix c){
 		if(w_size[0] != 1 || w_size[1] != 1)
 			throw("wrong \"w\" matrix size: " +  to_string(w_size[0]) + ", " + to_string( w_size[1])+"; expected: 1,1");
 
-		if(c_size[0] != 1 || c_size[1] != 1)
-			throw("wrong \"c\" matrix size: " +  to_string(c_size[0]) + ", " + to_string( c_size[1])+"; expected: 1,1");
+		if(w < 0 || w > 1)
+			throw("Incorrect w value:" + to_string(w(0)) + ", expected [0;1]");
 
 		const double P_force = 1000, E_young_mod = 2.07e11, material_density = 7800;
-		const double	LEN_MIN = 0.2, LEN_MAX = 1,
-						DIAM_MIN = 0.01, DIAM_MAX = 0.05,
-						DEFL_MAX = 0.005, STRESS_MAX = 3e8;
-
+		
 		double length = ld(0), diam = ld(1);
 
 		double 
@@ -217,6 +230,38 @@ matrix ff5rwP(matrix ld, matrix w, matrix c){
 		mass = (
 			M_PI * pow(diam/2, 2) * length * material_density
 		);
+
+		matrix dY(3,1);
+		dY(0) = mass; 
+		dY(1) = deflection; 
+		dY(2) = stress;
+		return dY;
+	}
+	catch (string ex_info)
+	{
+		throw ("ff5rwP_values(...):\n" + ex_info);
+	}
+}
+
+matrix ff5rwP(matrix ld, matrix w, matrix c){
+	//ld matrix
+	// [[l],
+	// 	[d]]
+	try{
+		
+		const double P_force = 1000, E_young_mod = 2.07e11, material_density = 7800;
+		const double	LEN_MIN = 0.2, LEN_MAX = 1,
+						DIAM_MIN = 0.01, DIAM_MAX = 0.05,
+						DEFL_MAX = 0.005, STRESS_MAX = 3e8;
+
+		double length = ld(0), diam = ld(1);
+
+		matrix f_values = ff5rwP_values(ld, w, c);
+
+		double 
+		mass = f_values(0),
+		deflection = f_values(1),
+		stress = f_values(2);
 
 		double penalty = pow(max(0., LEN_MIN - length),2) + pow( max(0., length - LEN_MAX), 2);
 
@@ -233,6 +278,43 @@ matrix ff5rwP(matrix ld, matrix w, matrix c){
 	}
 	catch (string ex_info)
 	{
-		throw ("ff5T(...):\n" + ex_info);
+		throw ("ff5rwP(...):\n" + ex_info);
+	}
+}
+
+matrix ff5rwPT(matrix h, matrix ld, matrix coef){
+	// coef
+	// [[c, d1],
+	//  [w, d2]]
+	try{
+		int *h_size = get_size(h),
+			*ld_size = get_size(ld),
+			*coef_size = get_size(coef);
+
+		if(ld_size[0] != 2 || ld_size[1] != 1)
+			throw("wrong \"ld\" matrix size: " +  to_string(ld_size[0]) + ", " + to_string( ld_size[1])+"; expected: 2,1");
+
+		if(h_size[0] != 1 || h_size[1] != 1)
+			throw("wrong \"h\" matrix size: " +  to_string(h_size[0]) + ", " + to_string( h_size[1])+"; expected: 1,1");
+
+		if(coef_size[0] != 2 || coef_size[1] != 2)
+			throw("wrong \"coef\" matrix size: " +  to_string(coef_size[0]) + ", " + to_string( coef_size[1])+"; expected: 2,2");
+
+		double c = coef(0,0), w = coef(1,0);
+		w = (w < 0 || w > 1) ? 0.5 : w;
+		c = (c == 0) ? 1 : c;
+
+		matrix d = get_col(coef,1);
+		
+		#ifdef VERBOSE
+			cout<< "[ff5rwPT] c:" << c << ", w: " << w << ", " << print_m_l(d, "d") <<endl;
+		#endif
+
+
+		return ff5rwP(ld + h * d, matrix(w), matrix(c));
+	}
+	catch (string ex_info)
+	{
+		throw ("ff5rwPT(...):\n" + ex_info);
 	}
 }

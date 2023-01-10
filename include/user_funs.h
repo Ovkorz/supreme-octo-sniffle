@@ -11,6 +11,9 @@ matrix ff2T(matrix x, matrix ud1, matrix ud2);
 matrix ff1R(matrix x, matrix ud1, matrix ud2);
 matrix ff1T(matrix x, matrix ud1, matrix ud2);
 
+matrix ff5_values(matrix x, matrix a, matrix w);
 matrix ff5T(matrix h, matrix x, matrix coef);
 matrix ff5(matrix x, matrix a = matrix(1), matrix w = matrix(0.5));
-matrix ff5rwP(matrix ld, matrix w = matrix(0.5), matrix c = matrix(1));
+
+matrix ff5rwP_values(matrix ld, matrix w, matrix c);
+matrix ff5rwPT(matrix h, matrix ld, matrix coef);
