@@ -258,11 +258,66 @@ solution Rosen(matrix(*ff)(matrix, matrix, matrix), matrix x0, matrix s0, double
 	}
 }
 
-solution pen(matrix(*ff)(matrix, matrix, matrix), matrix x0, double c, double dc, double epsilon, int Nmax, matrix ud1, matrix ud2)
+solution pen(
+	matrix(*ff)(matrix, matrix, matrix), 
+	solution(*opt_f)(matrix(*ff)(matrix, matrix, matrix), matrix x0, matrix coef,  double epsilon, int Nmax, matrix ud1, matrix ud2),
+	matrix x0, matrix coef, double epsilon, int Nmax, matrix innercoef, matrix ud2)
 {
+	// coef
+	// [[c, w],
+	//  [dc, 0]]
+
+	#ifdef VERBOSE
+		cout<< "Penalty function optimization..." <<endl;
+	#endif
+
 	try {
-		solution Xopt;
+		solution Xopt(x0), X;
+		int n = get_dim(Xopt);
 		//Tu wpisz kod funkcji
+		double c = coef(0,0), dc = coef(1,0), w = coef(0,1);
+
+		#ifdef VERBOSE
+			cout<<"[Penalty] Initial state: " << print_m_l(x0, "x0") << ", " << print_m_l(coef, "coef") 
+				<< ", c: " << c << ", dc: " << dc << ", w: " << w << ", epsilon: " << epsilon <<endl;
+		#endif
+
+		int counter = 0;
+		while(Xopt.f_calls < Nmax){
+			matrix c_w(2,1); c_w(0,0) = c; c_w(1) = w;
+
+			#ifdef VERBOSE
+				cout<< "[Penalty] Iteration " << counter << ", " << print_m_l(Xopt.x, "X") << ", " << print_m_l(c_w, "c_w") << endl;
+			#endif
+
+			X = opt_f(ff, Xopt.x, innercoef, epsilon, Nmax, c_w, ud2);
+
+			#ifdef VERBOSE
+				cout<< "[Penalty] Inner optimization result " << print_m_l(X, "X") <<endl;
+			#endif
+
+
+			matrix diff = X.x - Xopt.x; double prox = 0;
+			for(int i = 0; i < n; i++){
+				prox += pow(diff(i),2);
+			}
+			prox = sqrt(prox);
+			
+			if(prox < epsilon){
+				#ifdef VERBOSE
+					cout <<	"[Penalty] Given error tolerance reached - prox: " << prox << ", epsilon: " << epsilon
+						 << "; optimization finished with result " << print_m_l(X, "Xopt") << endl;
+				#endif
+
+				return X;
+			}
+
+			Xopt = X;
+			c *= dc;
+
+			counter++;
+		}
+		throw string("Too many f_calls!");
 
 		return Xopt;
 	}
@@ -445,7 +500,7 @@ solution golden(matrix(*ff)(matrix, matrix, matrix), double a, double b, double 
 		Xopt.fit_fun(ff, ud1, ud2);
 
 		#ifdef VERBOSE
-			cout<<"Initial state: " << print_m_l(Xopt, "Xopt")<< ", "<< print_m_l(lower, "lower") << ", " << print_m_l(upper, "upper") 
+			cout<<"[Golden] Initial state: " << print_m_l(Xopt, "Xopt")<< ", "<< print_m_l(lower, "lower") << ", " << print_m_l(upper, "upper") 
 				<< ", epsilon: " << epsilon	<<endl;
 		#endif
 
@@ -457,7 +512,7 @@ solution golden(matrix(*ff)(matrix, matrix, matrix), double a, double b, double 
 			Xopt.fit_fun(ff, ud1, ud2);
 			
 			#ifdef VERBOSE
-				cout<<" i = "<< counter<<", " << print_m_l(lower, "lower")<<", "<<print_m_l(upper, "upper")<<", range = "<< abs((upper - lower)(0))<< ", " 
+				cout<<"[Golden] Iteration "<< counter<<", " << print_m_l(lower, "lower")<<", "<<print_m_l(upper, "upper")<<", range = "<< abs((upper - lower)(0))<< ", " 
 				<< print_m_l(Xopt, "Xopt")<< ", " << print_m_l(X, "X") << ", ";
 			#endif
 
@@ -491,7 +546,7 @@ solution golden(matrix(*ff)(matrix, matrix, matrix), double a, double b, double 
 		Xopt.fit_fun(ff, ud1, ud2);
 
 		#ifdef VERBOSE
-				cout<< "Golden ratio optimization finished with result: " << print_m_l(Xopt, "Xopt") << endl << endl;
+				cout<< "[Golden] Optimization finished with result: " << print_m_l(Xopt, "Xopt") << endl << endl;
 		#endif
 
 		return Xopt;
@@ -502,8 +557,11 @@ solution golden(matrix(*ff)(matrix, matrix, matrix), double a, double b, double 
 	}
 }
 
-solution Powell(matrix(*ff)(matrix, matrix, matrix), matrix x0, double epsilon, int Nmax, matrix a, matrix ud2)
+solution Powell(matrix(*ff)(matrix, matrix, matrix), matrix x0, matrix coef ,double epsilon, int Nmax, matrix a, matrix ud2)
 {
+	// matrix a
+	// [[a],
+	// 	[w]]
 
 	#ifdef VERBOSE
 			cout<< "Powell optimization..."<<endl;
@@ -515,15 +573,16 @@ solution Powell(matrix(*ff)(matrix, matrix, matrix), matrix x0, double epsilon, 
 		//Tu wpisz kod funkcji
 		// solution P(x0);
 		int n = get_dim(Xopt);
-		matrix d(n,n), s(n,1,1.), X(x0), P(x0);
+		matrix d(n,n), X(x0), P(x0);
 		solution h(matrix(1));
 
 		//for golden method
 		const double lower = -5, upper = 5;
 
-		matrix coef(2,2);
-		coef(0,0) = a(0,0);
-		// coef matrix:
+		matrix gcoef(2,2);
+		gcoef(0,0) = a(0,0);
+		gcoef(1,0) = a(1,0);
+		// gcoef matrix:
 		// [[a, d1],
 		//  [w, d2]]
 
@@ -547,13 +606,13 @@ solution Powell(matrix(*ff)(matrix, matrix, matrix), matrix x0, double epsilon, 
 
 			for(int i = 0; i < n; i++){
 				matrix d_i = trans(get_row(d, i));
-				coef.set_col(d_i,1);
+				gcoef.set_col(d_i,1);
 
 				#ifdef VERBOSE
-					cout <<	"[Powell] Initializing directed optimization with " << print_m_l(P, "x0") << ", " << print_m_l(coef, "coef") << endl;
+					cout <<	"[Powell] Initializing directed optimization with " << print_m_l(P, "x0") << ", " << print_m_l(gcoef, "coef") << endl;
 				#endif
 
-				h = golden(ff, lower, upper, epsilon, Nmax, P, coef);
+				h = golden(ff, lower, upper, epsilon, Nmax, P, gcoef);
 
 				P = P + (h.x * d_i);
 				#ifdef VERBOSE
@@ -589,7 +648,7 @@ solution Powell(matrix(*ff)(matrix, matrix, matrix), matrix x0, double epsilon, 
 				cout << "[Powell] Updated step vectors: " << print_m_l(d, "d") << endl;
 			#endif
 
-			coef.set_col(
+			gcoef.set_col(
 				trans( 
 					get_row(d, n-1) 
 				)
@@ -598,10 +657,10 @@ solution Powell(matrix(*ff)(matrix, matrix, matrix), matrix x0, double epsilon, 
 			// h = Rosen(ff, h.x, s, alpha, beta, epsilon, Nmax, X, coef);
 
 			#ifdef VERBOSE
-				cout << "[Powell] Initializing additional directed optimization with " << print_m_l(P, "x0")  << ", " << print_m_l(coef, "coef") << endl;
+				cout << "[Powell] Initializing additional directed optimization with " << print_m_l(P, "x0")  << ", " << print_m_l(gcoef, "coef") << endl;
 			#endif
 			
-			h = golden(ff, lower, upper, epsilon, Nmax, P, coef);
+			h = golden(ff, lower, upper, epsilon, Nmax, P, gcoef);
 			X = P + (h.x * trans(get_row(d, n-1)));
 
 			#ifdef VERBOSE
