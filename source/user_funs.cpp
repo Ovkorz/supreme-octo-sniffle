@@ -142,8 +142,8 @@ matrix ff5_values(matrix x, matrix a, matrix w){
 			throw("wrong \"x\" matrix size: " +  to_string(x_size[0]) + ", " + to_string( x_size[1])+"; expected: 2,1");
 		
 		matrix dY(2,1);
-		dY(0) = ff5a(x, matrix(a));
-		dY(1) = ff5b(x, matrix(a));
+		dY(0) = ff5a(x, matrix(a))(0);
+		dY(1) = ff5b(x, matrix(a))(0);
 
 		return dY;
 	}
@@ -168,7 +168,9 @@ matrix ff5(matrix x, matrix a, matrix w){
 }
 
 matrix ff5T(matrix h, matrix x, matrix coef){
-	
+	// coef matrix:
+	// [[a, d1],
+	//  [w, d2]]
 	try{
 		int *x_size = get_size(x),
 			*h_size = get_size(h),
@@ -198,21 +200,13 @@ matrix ff5T(matrix h, matrix x, matrix coef){
 	}
 }
 
-matrix ff5rwP_values(matrix ld, matrix w, matrix c){
+matrix ff5rwP_values(matrix ld){
 
 	try{
-		int *ld_size = get_size(ld),
-			*w_size = get_size(w),
-			*c_size = get_size(c);
+		int *ld_size = get_size(ld);
 
 		if(ld_size[0] != 2 || ld_size[1] != 1)
 			throw("wrong \"ld\" matrix size: " +  to_string(ld_size[0]) + ", " + to_string( ld_size[1])+"; expected: 2,1");
-
-		if(w_size[0] != 1 || w_size[1] != 1)
-			throw("wrong \"w\" matrix size: " +  to_string(w_size[0]) + ", " + to_string( w_size[1])+"; expected: 1,1");
-
-		if(w < 0 || w > 1)
-			throw("Incorrect w value:" + to_string(w(0)) + ", expected [0;1]");
 
 		const double P_force = 1000, E_young_mod = 2.07e11, material_density = 7800;
 		
@@ -249,14 +243,14 @@ matrix ff5rwP(matrix ld, matrix w, matrix c){
 	// 	[d]]
 	try{
 		
-		const double P_force = 1000, E_young_mod = 2.07e11, material_density = 7800;
+		// const double P_force = 1000, E_young_mod = 2.07e11, material_density = 7800;
 		const double	LEN_MIN = 0.2, LEN_MAX = 1,
 						DIAM_MIN = 0.01, DIAM_MAX = 0.05,
 						DEFL_MAX = 0.005, STRESS_MAX = 3e8;
 
 		double length = ld(0), diam = ld(1);
 
-		matrix f_values = ff5rwP_values(ld, w, c);
+		matrix f_values = ff5rwP_values(ld);
 
 		double 
 		mass = f_values(0),
