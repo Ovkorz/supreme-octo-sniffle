@@ -35,7 +35,6 @@ int Fibonacci::generate(int n){
     return c;
 }
 
-
 long double* expansion(long double(*ff)(long double), long double x0, long double d, double alpha, int Nmax, int &f_calls)
 {
 	try
@@ -485,6 +484,7 @@ solution SD(matrix(*ff)(matrix, matrix, matrix), matrix(*gf)(matrix, matrix, mat
 		matrix d(n, 1), P(n, 2);
 		solution h;
 		double* ab;
+
 		while (true)
 		{
 			d = -X0.grad(gf, ud1, ud2);
