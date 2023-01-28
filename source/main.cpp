@@ -10,6 +10,9 @@ Akademia G�rniczo-Hutnicza
 #include<cmath>
 #include<ctime>
 #include<cstdlib>
+#include<fstream>
+#include<cstdlib>
+#include<ctime>
 
 #include"opt_alg.h"
 
@@ -23,19 +26,53 @@ void lab6();
 long double f1(long double x);
 
 int f_calls = 0;
+const int Nmax = 1e7;
 
 int main()
 {
 	try
 	{
+		srand(time(NULL));
 
+		ofstream output("lab5_real_high_res.txt");
+
+		matrix x0(2,1); x0(0) = 3.4; x0(1) = 2.2;
+		matrix ld(2,1); ld(0) = 0.1; ld(1) = 0.2;
+
+		const double epsilon = 1e-7, a = 1, w = 0.5, c = 1e5, dc = 1e2;
+		matrix powell_a(2,1); powell_a(0) = a; powell_a(1) = w; 
+
+		matrix pen_coef(2,2); pen_coef(0,0) = c; pen_coef(1,0) = dc; pen_coef(0,1) = w;
+
+		// lab5();
+
+
+		double w_temp = 0;
+		pen_coef(0,1) = w_temp;
+		ld(0) = 0.2; ld(1) = 0.04;
+
+		for(int i = 0; i <= 200; i++){
+			w_temp = i * 1e-4;
+			pen_coef(0,1) = w_temp;
+
+			solution Xopt = pen(ff5rwPT, Powell, ld, pen_coef, epsilon, Nmax);
+
+			matrix f_values = ff5rwP_values(Xopt.x);
+
+			output 	<< w_temp << "\t" << ld(0) << "\t" << ld(1) << "\t" << Xopt.x(0) << "\t" << Xopt.x(1) << "\t"
+				<< f_values(0) << "\t" << f_values(1) << "\t" << Xopt.f_calls << endl;
+
+			Xopt.clear_calls();
+
+		}
+		output.close();
+		
 	}
 	catch (string EX_INFO)
 	{
 		cerr << "ERROR:\n";
 		cerr << EX_INFO << endl << endl;
 	}
-	system("pause");
 	return 0;
 }
 
@@ -116,6 +153,78 @@ void lab4()
 
 void lab5()
 {
+	solution temp; temp.clear_calls();
+	//starting point
+	matrix x0(2,1); x0(0) = 3.4; x0(1) = 2.2;
+	matrix ld(2,1); ld(0) = 0.1; ld(1) = 0.2;
+
+	//parameters
+	const double epsilon = 1e-8, c = 1e7, dc = 100;
+
+	const string file_name_prefix = "lab5_";
+	const int a_values[] = {1, 10, 100};
+
+	ofstream output(file_name_prefix + "theoretical.txt");
+	for(int i = 0; i <= 100; i++){
+
+		x0(0) = rand() % 10 - 5; x0(1) = rand() % 10 - 5;
+		double w = i * 0.01;
+		output 	<< w << "," << x0(0) << "," << x0(1) << ",";
+
+		for(int j = 0; j < 3; j++){	
+
+			// matrix a_w:
+			// [[a],
+			// 	[w]]
+			matrix a_w(2,1); a_w(0) = a_values[j]; a_w(1) = w;
+	
+			solution Xopt = Powell(ff5T, x0, matrix(), epsilon, Nmax, a_w);
+			matrix f_values = ff5_values(Xopt.x, a_w(0));
+
+			output << Xopt.x(0) << "," << Xopt.x(1) << ","
+					<< f_values(0) << "," << f_values(1)  << "," << Xopt.f_calls << ",";
+
+			Xopt.clear_calls();
+
+		}
+		output << endl;
+
+
+	} 
+	output.close();
+
+	output.open(file_name_prefix + string("real.txt"));
+	matrix pen_coef(2,2); pen_coef(0,0) = c; pen_coef(1,0) = dc; 
+
+	// pen_coef
+	// [[c, w],
+	//  [dc, 0]]
+
+	
+
+	for(int i = 0; i <= 100; i++){
+		ld(0) = (rand() % 3) / 4.; ld(1) =( rand() % 2)/4.;
+
+		double w = i * 0.01;
+		pen_coef(0,1) = w;
+
+		solution Xopt = pen(ff5rwPT, Powell, ld, pen_coef, epsilon, Nmax);
+		matrix f_values = ff5rwP_values(Xopt.x);
+
+		output 	<< w << "\t" << ld(0) << "\t" << ld(1) << "\t" << Xopt.x(0) << "\t" << Xopt.x(1) << "\t"
+				<< f_values(0) << "\t" << f_values(1) << "\t" << Xopt.f_calls << endl;
+
+		#ifdef VERBOSE
+				cout<< "[lab5] RW problem optimization result: " << print_m_l(ld, "ld0") 
+					<< ", w: " << w << "," << print_m_l(Xopt, "Xopt") << endl;
+		#endif
+
+
+		Xopt.clear_calls();
+
+	}
+
+	output.close();
 
 }
 

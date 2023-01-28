@@ -440,9 +440,49 @@ solution SD(matrix(*ff)(matrix, matrix, matrix), matrix(*gf)(matrix, matrix, mat
 {
 	try
 	{
+		ofstream SD;
+		SD.open("SD.txt");
 		solution Xopt;
-		//Tu wpisz kod funkcji
+		Xopt.ud = trans(x0);
+		int n = get_len(x0);
+		solution X0, X1;
+		X0.x = x0;
+		matrix d(n, 1), P(n, 2);
+		solution h;
+		double* ab;
+		while (true)
+		{
+			d = -X0.grad(gf, ud1, ud2);
+			if (h0 < 0)
+			{
+				P.set_col(X0.x, 0);
+				P.set_col(d, 1);
+				ab = expansion(ff, 0, 1, 1.2, Nmax, ud1, P);
+				h = golden(ff, ab[0], ab[1], epsilon, Nmax, ud1, P);
+				X1.x = X0.x + h.x * d;
+			}
+			else
+				X1.x = X0.x + h0 * d;
 
+			Xopt.ud.add_row(trans(X1.x));
+
+			if (norm(X0.x - X1.x) < epsilon)
+			{
+				Xopt = X1;
+				Xopt.fit_fun(ff, ud1, ud2);
+				Xopt.flag = 0;
+				break;
+			}
+			if (solution::f_calls > Nmax || solution::g_calls > Nmax)
+			{
+				Xopt = X1;
+				Xopt.fit_fun(ff, ud1, ud2);
+				Xopt.flag = 1;
+				break;
+			}
+			X0 = X1;
+			SD << X1.x(0) << " " << X1.x(1) << endl;
+		}
 		return Xopt;
 	}
 	catch (string ex_info)
@@ -456,9 +496,52 @@ solution CG(matrix(*ff)(matrix, matrix, matrix), matrix(*gf)(matrix, matrix, mat
 	try
 	{
 		solution Xopt;
-		//Tu wpisz kod funkcji
+		Xopt.ud = trans(x0);
+		int n = get_len(x0);
+		solution X0, X1;
+		X0.x = x0;
+		matrix d(n, 1), P(n, 2);
+		solution h;
+		double* ab{};
+		double beta;
+		d = -X0.grad(gf);
+		while (true)
+		{
+			if (h0 < 0)
+			{
+				P.set_col(X0.x, 0);
+				P.set_col(d, 1);
+				ab = expansion(ff, 0, 1, 1.2, Nmax, ud1, P);
+				h = golden(ff, ab[0], ab[1], epsilon, Nmax, ud1, P);
+				X1.x = X0.x + h.x * d;
+			}
+			else
+				X1.x = X0.x + h0 * d;
 
+			Xopt.ud.add_row(trans(X1.x));
+
+			if (norm(X1.x - X0.x) < epsilon)
+			{
+				Xopt = X1;
+				Xopt.fit_fun(ff, ud1, ud2);
+				Xopt.flag = 0;
+				break;
+			}
+			if (std::max(solution::f_calls, solution::g_calls) > Nmax)
+			{
+				Xopt = X1;
+				Xopt.fit_fun(ff, ud1, ud2);
+				Xopt.flag = 1;
+				break;
+			}
+			X1.grad(gf);
+			beta = pow(norm(X1.g), 2) / pow(norm(X0.g), 2);
+			d = -X1.g + beta * d;
+			X0 = X1;
+			//            std::cout << "X0.x = " << X0.x << std::endl;
+		}
 		return Xopt;
+
 	}
 	catch (string ex_info)
 	{
@@ -471,9 +554,49 @@ solution Newton(matrix(*ff)(matrix, matrix, matrix), matrix(*gf)(matrix, matrix,
 {
 	try
 	{
+		ofstream Newton;
+		Newton.open("Newton.txt");
 		solution Xopt;
-		//Tu wpisz kod funkcji
+		Xopt.ud = trans(x0);
+		int n = get_len(x0);
+		solution X0, X1;
+		X0.x = x0;
+		matrix d(n, 1), P(n, 2);
+		solution h;
+		double* ab;
+		while (true)
+		{
+			d = -inv(X0.hess(Hf, ud1, ud1)) * X0.grad(gf, ud1, ud2);
+			if (h0 < 0)
+			{
+				P.set_col(X0.x, 0);
+				P.set_col(d, 1);
+				ab = expansion(ff, 0, 1, 1.2, Nmax, ud1, P);
+				h = golden(ff, ab[0], ab[1], epsilon, Nmax, ud1, P);
+				X1.x = X0.x + h.x * d;
+			}
+			else
+				X1.x = X0.x + h0 * d;
 
+			Xopt.ud.add_row(trans(X1.x));
+
+			if (norm(X0.x - X1.x) < epsilon)
+			{
+				Xopt = X1;
+				Xopt.fit_fun(ff, ud1, ud2);
+				Xopt.flag = 0;
+				break;
+			}
+			if (solution::f_calls > Nmax || solution::g_calls > Nmax)
+			{
+				Xopt = X1;
+				Xopt.fit_fun(ff, ud1, ud2);
+				Xopt.flag = 1;
+				break;
+			}
+			X0 = X1;
+			Newton << X1.x(0) << " " << X1.x(1) << endl;
+		}
 		return Xopt;
 	}
 	catch (string ex_info)
@@ -682,11 +805,102 @@ solution EA(matrix(*ff)(matrix, matrix, matrix), int N, matrix limits, int mi, i
 	try
 	{
 		solution Xopt;
-		//Tu wpisz kod funkcji
-
+		solution* P = new solution[mi + lambda];
+		solution* Pm = new solution[mi];
+		matrix IFF(mi, 1), temp(N, 2);
+		double r, s, s_IFF;
+		double tau = pow(2 * N, -0.5), tau1 = pow(2 * pow(N, 0.5), -0.5);
+		int j_min;
+		for (int i = 0; i < mi; ++i)
+		{
+			P[i].x = matrix(N, 2);
+			for (int j = 0; j < N; ++j)
+			{
+				P[i].x(j, 0) = (limits(j, 1) - limits(j, 0)) * m2d(rand_mat()) + limits(j, 0);
+				P[i].x(j, 1) = sigma0(j);
+			}
+			if (P[i].fit_fun(ff, ud1, ud2) < epsilon)
+			{
+				Xopt = P[i];
+				Xopt.flag = 0;
+				delete[]P;
+				delete[]Pm;
+				return Xopt;
+			}
+		}
+		while (true)
+		{
+			s_IFF = 0;
+			for (int i = 0; i< mi ; ++i)
+			{
+				IFF(i) = 1 / m2d(P[i].y);
+				s_IFF += IFF(i);
+			}
+			for (int i = 0; i<lambda ; ++i)
+			{
+				r = s_IFF * m2d(rand_mat());
+				s = 0;
+					for (int j = 0; j<mi; ++j)
+					{
+						s += IFF(j);
+						if (r<=s )
+						{
+							P[mi + i] = P[j] ;
+							break;
+						}
+					}
+			}
+			for (int i = 0; i< lambda ; ++i)
+			{
+				r = m2d(rand_mat());
+				for (int j = 0; j < N; ++j)
+				{
+					P[mi + i].x(j, 1) *= exp(tau1 * r +tau *m2d(randn_mat()));
+					P[mi + i].x(j, 0) += P[mi + i].x(j, 1) * m2d(randn_mat());
+				}
+			}
+			for (int i = 0; i< lambda; i += 2)
+			{
+				r = m2d(rand_mat());
+				temp = P[mi+i].x ;
+				P[mi + i].x = r * P[mi+i].x + (1-r) * P[mi+i+1].x;
+				P[mi + i + 1].x = r * P[mi+i+1].x + (1-r) * temp;
+			}
+			for (int i = 0; i < lambda; ++i)
+			{
+				if (P[mi+i].fit_fun(ff,ud1, ud2) < epsilon)
+				{
+		
+					Xopt = P[mi+i] ;
+					Xopt.flag = 0;
+					delete[]P;
+					delete[]Pm;
+					return Xopt;
+				}
+			}
+			for (int i = 0; i < mi; ++i)
+			{
+				j_min = 0;
+				for (int j = 1; j < mi + lambda ; ++j)
+					if (P[j_min].y > P[j].y )
+						j_min = j;
+				Pm[i] = P[j_min] ;
+				P[j_min].y = 1e10;
+			}
+			for (int i = 0; i < mi; ++i)
+				P[i] = Pm[i];
+			if (solution::f_calls > Nmax)
+			{
+				Xopt = P[0];
+				Xopt.flag = 1;
+				break;
+			}
+		}
+		delete[]P;
+		delete[]Pm;
 		return Xopt;
 	}
-	catch (string ex_info)
+	catch(string ex_info)
 	{
 		throw ("solution EA(...):\n" + ex_info);
 	}
