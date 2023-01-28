@@ -11,6 +11,12 @@ matrix ff2T(matrix x, matrix ud1, matrix ud2);
 matrix ff1R(matrix x, matrix ud1, matrix ud2);
 matrix ff1T(matrix x, matrix ud1, matrix ud2);
 
+matrix gf4R(matrix x, matrix ud1 = NAN, matrix ud2 = NAN);
+matrix ff4R(matrix x, matrix ud1 = NAN, matrix ud2 = NAN);
+matrix Hf4T(matrix x, matrix ud1 = NAN, matrix ud2 = NAN);
+matrix gf4T(matrix x, matrix ud1 = NAN, matrix ud2 = NAN);
+matrix ff4T(matrix x, matrix ud1 = NAN, matrix ud2 = NAN);
+
 matrix ff5_values(matrix x, matrix a, matrix w = NAN);
 matrix ff5T(matrix h, matrix x, matrix coef);
 matrix ff5(matrix x, matrix a = matrix(1), matrix w = matrix(0.5));

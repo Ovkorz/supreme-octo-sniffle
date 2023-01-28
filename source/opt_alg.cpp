@@ -35,59 +35,106 @@ int Fibonacci::generate(int n){
     return c;
 }
 
-long double* expansion(long double(*ff)(long double), long double x0, long double d, double alpha, int Nmax, int &f_calls)
+// long double* expansion(long double(*ff)(long double), long double x0, long double d, double alpha, int Nmax, int &f_calls)
+// {
+// 	try
+// 	{
+// 		long double* p = new long double[2]{ 0,0 };
+// 		//Tu wpisz kod funkcji
+		
+// 		long double x1 = x0 + d;
+
+// 		long double 
+// 			y0 = (*ff)(x0),
+// 			y1 = (*ff)(x1);
+// 		if(y0 == y1){
+// 			p[0] = x0; p[1] = x1;
+// 			return p;
+// 		}
+// 		else if(y0 > y1){
+// 			d= -d;
+// 			x1 = x0 + d;
+// 			y1 = (*ff)(x1);
+// 			if(y0 <= y1){
+// 				p[0] = x0; p[1] = x1;
+// 				return p;
+// 			}
+// 		}
+
+// 		int i = 0;
+// 		long double 
+// 			x_prev = x0,
+// 			x_crrnt = x1,
+// 			x_next = 0;
+
+// 		do {
+// 			if (f_calls > Nmax){
+// 				cerr << "Too many f_calls!"<<endl;
+// 				return NULL;
+// 			}
+// 			i++;
+// 			x_prev = x_crrnt;
+// 			x_crrnt = x_next;
+// 			x_next = x0 + pow(alpha, i) * d;
+			
+// 		} while (x_crrnt <= x_next);
+
+// 		if (d > 0) {
+// 			p[0] = x_prev;
+// 			p[1] = x_next;
+// 		}
+// 		else {
+// 			p[0] = x_next;
+// 			p[1] = x_prev;
+// 		}
+
+// 		return p;
+// 	}
+// 	catch (string ex_info)
+// 	{
+// 		throw ("double* expansion(...):\n" + ex_info);
+// 	}
+// }
+
+double* expansion(matrix(*ff)(matrix, matrix, matrix), double x0, double d, double alpha, int Nmax, matrix ud1, matrix ud2)
 {
 	try
 	{
-		long double* p = new long double[2]{ 0,0 };
-		//Tu wpisz kod funkcji
-		
-		long double x1 = x0 + d;
-
-		long double 
-			y0 = (*ff)(x0),
-			y1 = (*ff)(x1);
-		if(y0 == y1){
-			p[0] = x0; p[1] = x1;
+		double* p = new double[2]{ 0,0 };
+		int i = 0;
+		solution X0(x0), X1(x0 + d);
+		X0.fit_fun(ff, ud1, ud2);
+		X1.fit_fun(ff, ud1, ud2);
+		if (X0.y == X1.y)
+		{
+			p[0] = m2d(X0.x);
+			p[1] = m2d(X1.x);
 			return p;
 		}
-		else if(y0 > y1){
-			d= -d;
-			x1 = x0 + d;
-			y1 = (*ff)(x1);
-			if(y0 <= y1){
-				p[0] = x0; p[1] = x1;
+		if (X0.y < X1.y)
+		{
+			d *= -1;
+			X1.x = X0.x + d;
+			X1.fit_fun(ff, ud1, ud2);
+			if (X1.y >= X0.y)
+			{
+				p[0] = m2d(X1.x);
+				p[1] = m2d(X0.x) - d;
 				return p;
 			}
 		}
-
-		int i = 0;
-		long double 
-			x_prev = x0,
-			x_crrnt = x1,
-			x_next = 0;
-
-		do {
-			if (f_calls > Nmax){
-				cerr << "Too many f_calls!"<<endl;
-				return NULL;
-			}
-			i++;
-			x_prev = x_crrnt;
-			x_crrnt = x_next;
-			x_next = x0 + pow(alpha, i) * d;
-			
-		} while (x_crrnt <= x_next);
-
-		if (d > 0) {
-			p[0] = x_prev;
-			p[1] = x_next;
+		solution X2;
+		while (true)
+		{
+			++i;
+			X2.x = x0 + pow(alpha, i) * d;
+			X2.fit_fun(ff, ud1, ud2);
+			if (X2.y >= X1.y || solution::f_calls > Nmax)
+				break;
+			X0 = X1;
+			X1 = X2;
 		}
-		else {
-			p[0] = x_next;
-			p[1] = x_prev;
-		}
-
+		d > 0 ? p[0] = m2d(X0.x), p[1] = m2d(X2.x) : (p[0] = m2d(X2.x), p[1] = m2d(X0.x));
 		return p;
 	}
 	catch (string ex_info)

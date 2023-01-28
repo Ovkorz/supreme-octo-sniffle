@@ -32,40 +32,7 @@ int main()
 {
 	try
 	{
-		srand(time(NULL));
-
-		ofstream output("lab5_real_high_res.txt");
-
-		matrix x0(2,1); x0(0) = 3.4; x0(1) = 2.2;
-		matrix ld(2,1); ld(0) = 0.1; ld(1) = 0.2;
-
-		const double epsilon = 1e-7, a = 1, w = 0.5, c = 1e5, dc = 1e2;
-		matrix powell_a(2,1); powell_a(0) = a; powell_a(1) = w; 
-
-		matrix pen_coef(2,2); pen_coef(0,0) = c; pen_coef(1,0) = dc; pen_coef(0,1) = w;
-
-		// lab5();
-
-
-		double w_temp = 0;
-		pen_coef(0,1) = w_temp;
-		ld(0) = 0.2; ld(1) = 0.04;
-
-		for(int i = 0; i <= 200; i++){
-			w_temp = i * 1e-4;
-			pen_coef(0,1) = w_temp;
-
-			solution Xopt = pen(ff5rwPT, Powell, ld, pen_coef, epsilon, Nmax);
-
-			matrix f_values = ff5rwP_values(Xopt.x);
-
-			output 	<< w_temp << "\t" << ld(0) << "\t" << ld(1) << "\t" << Xopt.x(0) << "\t" << Xopt.x(1) << "\t"
-				<< f_values(0) << "\t" << f_values(1) << "\t" << Xopt.f_calls << endl;
-
-			Xopt.clear_calls();
-
-		}
-		output.close();
+		lab4();
 		
 	}
 	catch (string EX_INFO)
@@ -76,40 +43,40 @@ int main()
 	return 0;
 }
 
-void lab1()
-{
-	std::cout<< "lab 1" << std::endl;
+// void lab1()
+// {
+// 	std::cout<< "lab 1" << std::endl;
 
-	srand((time(NULL)));
-	long double* temp_tab = new long double[2]{ 0.0, 0.0 };
-	double x0; int rand_temp;									//ponieważ chcę losować liczby niecałkowite
-	double d = 0.1;												//to jest krok chyba, nie pamiętam jaki powinien być, jak coś to się zmieni
-	double alfa; int alfa_temp;									// też chcę niecałkowite więc podobnie - zamiana na double potem
-	int N_max = 1000;												//na razie dam 5 jak coś to zmień
+// 	srand((time(NULL)));
+// 	long double* temp_tab = new long double[2]{ 0.0, 0.0 };
+// 	double x0; int rand_temp;									//ponieważ chcę losować liczby niecałkowite
+// 	double d = 0.1;												//to jest krok chyba, nie pamiętam jaki powinien być, jak coś to się zmieni
+// 	double alfa; int alfa_temp;									// też chcę niecałkowite więc podobnie - zamiana na double potem
+// 	int N_max = 1000;												//na razie dam 5 jak coś to zmień
 	
 
-	for (int j = 0; j < 3; j++) {
-		alfa_temp = rand() % 301 + 100;							
-		alfa = alfa_temp / 100.0;
-		std::cout << "\nalpha = " << alfa << std::endl;
-		std::cout << "Lp.\tx0\ta\tb\tf_calls" << std::endl;
+// 	for (int j = 0; j < 3; j++) {
+// 		alfa_temp = rand() % 301 + 100;							
+// 		alfa = alfa_temp / 100.0;
+// 		std::cout << "\nalpha = " << alfa << std::endl;
+// 		std::cout << "Lp.\tx0\ta\tb\tf_calls" << std::endl;
 
-		for (int i = 0; i < 100; i++) {
-			rand_temp = rand() % 20001 - 10000;					//o tutaj liczby int
-			x0 = rand_temp / 100.0;										//dzielenie tak aby były liczby niecałkowite 
-			temp_tab = expansion(&f1, x0, d, alfa, N_max, f_calls);
-			std::cout 	<< i+1 << "\t"
-						<< x0 << "\t"
-						<< temp_tab[0] << "\t"
-						<< temp_tab[1] << "\t"
-						<< f_calls 
-			<< std::endl;
+// 		for (int i = 0; i < 100; i++) {
+// 			rand_temp = rand() % 20001 - 10000;					//o tutaj liczby int
+// 			x0 = rand_temp / 100.0;										//dzielenie tak aby były liczby niecałkowite 
+// 			temp_tab = expansion(&f1, x0, d, alfa, N_max, f_calls);
+// 			std::cout 	<< i+1 << "\t"
+// 						<< x0 << "\t"
+// 						<< temp_tab[0] << "\t"
+// 						<< temp_tab[1] << "\t"
+// 						<< f_calls 
+// 			<< std::endl;
 
-			f_calls = 0;
-		}
-	}
+// 			f_calls = 0;
+// 		}
+// 	}
 
-}
+// }
 
 void lab2()
 {
